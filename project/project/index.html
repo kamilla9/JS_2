@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Интернет-магазин</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="logo">E-shop</div>
+            <div class="cart">
+                <form action="#" class="search-from" @submit.prevent> <!-- @ = v-on: -->
+                    <input type="text" class="search-field" v-model.trim="searchLine"> <!-- метод .trim = пробелы в начале и в конце строки будут убираться -->
+                    <button class="btn-search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <button class="btn-cart" @click="toggleCartVisibility">Корзина</button>
+               <transition name="transition">
+                     <div class="cart-container" v-if="isVisibleCart"> </div>
+
+               </transition>
+            </div>
+        </header>
+    
+        <main class="content">
+            <div class="products" v-if="isGoodsNotEmpty">
+                <div class="goods-item" v-for="good in filteredGoods">
+                    <h3> {{ good.product_name }}</h3>
+                    <p>{{ good.price }}</p>
+                    <button>Добавить в корзину</button>
+                </div>
+            </div>
+            <div class="goodsInCart" v-else>
+                Нет данных
+            </div>
+        </main>
+    </div>
+
+
+
+    <script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js" integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
