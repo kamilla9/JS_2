@@ -203,7 +203,6 @@ const app = new Vue({
 		isGoodsNotEmpty(){
 			return this.filteredGoods.length > 0;
 		}
-
 	},
 	//хуки жизненного цикла(методы), запро с списка товаров
 	mounted(){// когда приложение смонтировалось

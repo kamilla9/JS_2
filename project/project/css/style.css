@@ -128,7 +128,6 @@ p {
 .transition-leave-active{
     transition: opacity .3s;   
 }
-
 .transition-enter,
 .transition-leave-to{
     opacity: 0;
