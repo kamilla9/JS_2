@@ -13,6 +13,22 @@ button:focus{
     outline: none;
     cursor: pointer;
 }
+
+.notif{
+    position: fixed;
+    right: 10px;
+    width: 250px;
+    z-index: 300;
+    padding: 10px 20px;
+}
+
+.notif-err{
+    background-color: red;
+    color: #fff;
+    border: 1px solid #480000;
+    border-radius: 3px;
+}
+
 .logo{
     text-transform: uppercase;
     font-weight: bold;
@@ -53,6 +69,11 @@ button:focus{
     padding: 10px 20px;
     border: 1px solid #ccc;
     border-radius: 10px;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
 }
 .goods-item> button{
     background-color: #2f2a2d;

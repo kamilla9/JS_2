@@ -1,6 +1,186 @@
 
-//ФЭЙК ЭПИ 
 const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
+
+Vue.component('notification',{
+	props:['error','level'],
+	computed:{
+		errorModel(){
+			 return this.error.message ? this.error.message : this.error;
+		},
+		top(){
+			return `${(this.level +1) *20}px`;
+		}
+	},
+	template:`
+		<div class="notif notif-err" :style="{top:top}">
+			{{errorModel}}
+		</div>
+	`
+});
+
+Vue.component('goods-item',{
+	props:['good'],
+	methods:{
+		add(){
+			//emit- стенная функция для связи между компонентами
+			this.$emit('add', this.good.product_id);
+		}
+	},
+	template:
+	`
+		<div class="goods-item">
+			 <h3> {{ good.product_name }}</h3>
+             <p>{{ good.price }}</p>
+             <button @click="add">Добавить в корзину</button>
+		</div>
+	`
+});
+
+Vue.component('goods-list',{
+	props:['goods'],
+	computed:{
+		isGoodsNotEmpty(){ 
+			return this.goods.length > 0;
+		}
+	},
+	methods:{
+		addTo(productId){
+			this.$emit('add', productId)
+		}
+	},
+	template:
+		`
+			<div class="goods-list" v-if="isGoodsNotEmpty">
+				<goods-item v-for="good in goods" @add="addTo" :good="good" :key="good.product_id">
+				</goods-item> <!--key - служебное слово-->
+			</div>
+			<div class="goodsInCart" v-else>
+	                Нет данных
+	        </div>	
+		`
+});
+
+Vue.component('btn-cart',{
+	props:['goods'],
+	// data: () => ({ // в компоненте дата - это функция , которая возвращает обьект
+	// 	isVisibleCart: false
+	// }),
+	// computed:{
+	// 	isVisibleCart(){
+	// 		return this.goods.length > 0;
+	// 	}	
+	// },
+	template:
+	`
+			<transition name="transition">
+				<div class="cart-container"></div>
+			</transition>
+        
+	`
+});
+
+Vue.component('search-goods',{
+	props:['value'],
+	computed:{
+		searchModel:{
+			// return 
+			get(){
+				return this.value;
+			},
+			set(newValue){
+				this.$emit('input', newValue)
+			}
+		}
+	},
+	template:
+	`
+		<form action="#" class="search-from" @submit.prevent> <!-- @ = v-on: -->
+            <input type="text" class="search-field" v-model.trim="searchModel"> 
+            <button class="btn-search">
+                <i class="fas fa-search"></i>
+           	</button>
+        </form>
+	`
+});
+
+
+const app = new Vue({
+	el:'#app',
+	data:{
+		goods:[],// переносим список товаров, поиск.
+		searchLine:'',
+		isVisibleCart: false,
+		errors:[],
+	},
+	computed:{
+		filteredGoods(){
+			const regexp = new RegExp(this.searchLine, 'i');
+			return this.goods.filter((good) =>{ // filter возвращает только массив
+				return regexp.test(good.product_name);
+			});
+		},
+	},
+	//хуки жизненного цикла(методы), запрос списка товаров
+	mounted(){// когда приложение смонтировалось
+		// через this. мы обращаемся к элементу из Vue
+		this.makeGETRequest(`${BASE_URL}/catalogDataa.json`) 
+		.then((goods) =>{
+			this.goods = goods;
+		})
+		.catch(err => this.addError(err));
+	},
+	methods:{
+		addToCart(productId){
+			console.log('add product to cart', productId);
+		},
+
+		toggleCartVisibility(){
+			this.isVisibleCart = !this.isVisibleCart;
+		},
+
+		addError(error){
+			this.errors.push(error);
+			setTimeout(()=>{
+				const index = this.errors.indexOf(error);
+				if(index > -1) this.errors.splice(index , 1);
+			}, 6000);
+		},
+
+		// searchHandler(){
+		// 	const regexp = new RegExp(this.searchLine, 'i');
+		// 	this.filteredGoods = this.goods.filter((good) =>{
+		// 		return regexp.test(good.product_name);
+		// 	});
+		// },
+		makeGETRequest(url){
+			return new Promise((resolve,reject) =>{
+				const xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
+
+				xhr.onreadystatechange = function(){
+					if (xhr.readyState == 4){
+						try{
+							const response = JSON.parse(xhr.responseText);
+							if (xhr.status != 200) reject(response);
+								resolve(response);
+							} catch(e){
+								reject(e);
+							}
+						}
+					};
+				xhr.onerror = function(e){
+					reject(e);
+				};
+				xhr.open('GET',url);
+				xhr.send();
+			});
+		}
+	}
+});
+
+
+
+
+
 // const image = 'https://placehold.it/200x150';
 // const cartImage = 'https://placehold.it/100x80';
 
@@ -185,63 +365,4 @@ const BASE_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-st
 
 // let cart = new Cart ();
 // let products = new ProductsList (cart)
-
-const app = new Vue({
-	el:'#app',
-	data:{
-		goods:[],// переносим список товаров, поиск.
-		searchLine:'',
-		isVisibleCart: false,
-	},
-	computed:{
-		filteredGoods(){
-			const regexp = new RegExp(this.searchLine, 'i');
-			return this.goods.filter((good) =>{ // filter возвращает только массив
-				return regexp.test(good.product_name);
-			});
-		},
-		isGoodsNotEmpty(){
-			return this.filteredGoods.length > 0;
-		}
-	},
-	//хуки жизненного цикла(методы), запро с списка товаров
-	mounted(){// когда приложение смонтировалось
-		// через this. мы обращаемся к элементу из Vue
-		this.makeGETRequest(`${BASE_URL}/catalogData.json`) 
-		.then((goods) =>{
-			this.goods = goods;
-		})
-		.catch(err => console.error(err));
-	},
-	methods:{
-		toggleCartVisibility(){
-			this.isVisibleCart = !this.isVisibleCart;
-		},
-		// searchHandler(){
-		// 	const regexp = new RegExp(this.searchLine, 'i');
-		// 	this.filteredGoods = this.goods.filter((good) =>{
-		// 		return regexp.test(good.product_name);
-		// 	});
-		// },
-		makeGETRequest(url){
-			return new Promise((resolve,reject) =>{
-				const xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
-
-				xhr.onreadystatechange = function(){
-					if (xhr.readyState == 4){
-						const response = JSON.parse(xhr.responseText);
-					if (xhr.status != 200) reject(response);
-					resolve(response);
-					}
-				};
-				xhr.onerror = function(e){
-					reject(e);
-				};
-				xhr.open('GET',url);
-				xhr.send();
-			});
-		}
-	}
-});
-
 
